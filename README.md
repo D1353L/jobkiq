@@ -24,7 +24,7 @@ exe/jobkiq worker --q optional_queue
 Enqueue job:
 
 ```bash
-exe/jobkiq perform_async TestJob tag1, tag2 --q optional_queue
+exe/jobkiq perform_async TestJob tag1 tag2 --q optional_queue
 ```
 
 ### Docker Compose
