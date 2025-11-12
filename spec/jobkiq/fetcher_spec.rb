@@ -7,8 +7,8 @@ require 'json'
 
 RSpec.describe Jobkiq::Fetcher do
   let(:redis_mock) { MockRedis.new }
-  let(:queue_locker) { instance_double('Jobkiq::QueueManagement::QueueLocker') }
-  let(:tags_locker) { instance_double('Jobkiq::QueueManagement::TagsLocker') }
+  let(:queue_locker) { instance_double(Jobkiq::QueueManagement::QueueLocker) }
+  let(:tags_locker) { instance_double(Jobkiq::QueueManagement::TagsLocker) }
   let(:queue_name) { 'default' }
   let(:fetcher) do
     described_class.new(
@@ -54,8 +54,7 @@ RSpec.describe Jobkiq::Fetcher do
 
     context 'when jobs exist in the queue' do
       before do
-        allow(redis_mock).to receive(:zrange).and_return([job_json])
-        allow(redis_mock).to receive(:zrem).and_return(1)
+        allow(redis_mock).to receive_messages(zrange: [job_json], zrem: 1)
       end
 
       it 'claims a job and locks its tags' do

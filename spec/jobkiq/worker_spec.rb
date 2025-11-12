@@ -6,9 +6,9 @@ require 'mock_redis'
 
 RSpec.describe Jobkiq::Worker do
   let(:redis_mock) { MockRedis.new }
-  let(:queue_manager) { instance_double('Jobkiq::QueueManagement::QueueManager') }
-  let(:fetcher) { instance_double('Jobkiq::Fetcher') }
-  let(:logger) { instance_double('Logger', info: true, error: true) }
+  let(:queue_manager) { instance_double(Jobkiq::QueueManagement::QueueManager) }
+  let(:fetcher) { instance_double(Jobkiq::Fetcher) }
+  let(:logger) { instance_double(Logger, info: true, error: true) }
   let(:worker) do
     described_class.new(
       queue_name: 'default',
@@ -20,6 +20,7 @@ RSpec.describe Jobkiq::Worker do
   end
 
   before do
+    allow(SecureRandom).to receive(:uuid).and_return('123-worker-uuid')
     allow(worker).to receive(:work_loop)
     allow(worker).to receive(:trap_signals)
   end
@@ -38,7 +39,7 @@ RSpec.describe Jobkiq::Worker do
   describe '#run!' do
     it 'logs start, traps signals, and calls work_loop' do
       worker.run!
-      expect(logger).to have_received(:info).with('Jobkiq worker started (queue=default)')
+      expect(logger).to have_received(:info).with('Jobkiq worker started (queue=default, worker_id=123-worker-uuid)')
       expect(worker).to have_received(:trap_signals)
       expect(worker).to have_received(:work_loop)
     end

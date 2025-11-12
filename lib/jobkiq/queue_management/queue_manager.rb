@@ -7,11 +7,11 @@ module Jobkiq
 
       WAIT_FOR_JOB_SEC = 10
 
-      def initialize(queue_name:, redis:, tags_locker: nil)
+      def initialize(queue_name:, redis:, tags_locker:)
         @redis = redis
+        @tags_locker = tags_locker
         @queue_key = queue_key(queue_name)
         @wakeup_key = wakeup_key(queue_name)
-        @tags_locker = tags_locker || TagsLocker.new(queue_name:, redis:)
       end
 
       def enqueue(job_attrs)

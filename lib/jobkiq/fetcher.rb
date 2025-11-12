@@ -7,11 +7,11 @@ module Jobkiq
     BATCH_SIZE = 10
     MAX_OFFSET = 1000
 
-    def initialize(queue_name:, redis:, queue_locker: nil, tags_locker: nil)
+    def initialize(queue_name:, redis:, queue_locker:, tags_locker:)
       @redis = redis
+      @queue_locker = queue_locker
+      @tags_locker = tags_locker
       @queue_key = queue_key(queue_name)
-      @queue_locker = queue_locker || QueueManagement::QueueLocker.new(queue_name:, redis:)
-      @tags_locker = tags_locker || QueueManagement::TagsLocker.new(queue_name:, redis:)
     end
 
     def claim_next_job
