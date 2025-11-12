@@ -31,7 +31,7 @@ module Jobkiq
       tags_locker  = QueueManagement::TagsLocker.new(queue_name: @queue_name, redis: @redis)
       queue_locker = QueueManagement::QueueLocker.new(queue_name: @queue_name, redis: @redis, worker_id: @worker_id)
 
-      @fetcher       = fetcher       || Fetcher.new(queue_name: @queue_name, worker_id: @worker_id, redis: @redis,
+      @fetcher       = fetcher       || Fetcher.new(queue_name: @queue_name, redis: @redis,
                                                     queue_locker:, tags_locker:)
       @queue_manager = queue_manager || QueueManagement::QueueManager.new(queue_name: @queue_name, redis: @redis,
                                                                           tags_locker:)
