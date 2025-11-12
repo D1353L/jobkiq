@@ -66,8 +66,8 @@ module Jobkiq
     end
 
     def finish_execution(job_attrs)
-      @queue_manager.handle_post_execution(job_attrs)
       @logger.info("Done: class=#{job_attrs["class"]}, job_id=#{job_attrs["job_id"]}\n")
+      @queue_manager.handle_post_execution(job_attrs)
     end
 
     def log_worker_started
