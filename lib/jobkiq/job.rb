@@ -5,10 +5,8 @@ module Jobkiq
     attr_reader :job_id, :tags
 
     def initialize(queue_name: DEFAULT_QUEUE_NAME, redis: nil, queue_manager: nil)
-      @redis = redis || RedisConnection.redis
-      @queue_manager = queue_manager || QueueManagement::QueueManager.new(queue_name:, redis: @redis)
-
       @job_id = SecureRandom.uuid
+      setup_dependencies(queue_name:, redis:, queue_manager:)
     end
 
     def perform
@@ -25,6 +23,16 @@ module Jobkiq
     end
 
     private
+
+    def setup_dependencies(queue_name:, redis:, queue_manager:)
+      @redis = redis || RedisConnection.redis
+
+      @queue_manager = queue_manager || QueueManagement::QueueManager.new(
+        queue_name:,
+        redis: @redis,
+        tags_locker: QueueManagement::TagsLocker.new(queue_name:, redis: @redis)
+      )
+    end
 
     def build_job_attrs(tags:)
       {

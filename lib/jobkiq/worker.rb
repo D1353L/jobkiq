@@ -4,15 +4,12 @@ module Jobkiq
   class Worker
     TAG_HOLD_EXPIRATION_SEC = 60
 
-    def initialize(queue_name: DEFAULT_QUEUE_NAME, redis: RedisConnection.redis, queue_manager: nil, fetcher: nil,
+    def initialize(queue_name: DEFAULT_QUEUE_NAME, redis: nil, queue_manager: nil, fetcher: nil,
                    logger: nil)
-      @redis = redis
       @queue_name = queue_name
-      @logger = logger || Logger.new($stdout)
-      @fetcher = fetcher || Fetcher.new(queue_name:, redis:)
-      @queue_manager = queue_manager || QueueManagement::QueueManager.new(queue_name:, redis:)
-
+      @worker_id = SecureRandom.uuid
       @running = true
+      setup_dependencies(redis:, queue_manager:, fetcher:, logger:)
     end
 
     def run!
@@ -26,6 +23,19 @@ module Jobkiq
     end
 
     private
+
+    def setup_dependencies(redis:, queue_manager:, fetcher:, logger:)
+      @redis  = redis  || RedisConnection.redis
+      @logger = logger || Logger.new($stdout)
+
+      tags_locker  = QueueManagement::TagsLocker.new(queue_name: @queue_name, redis: @redis)
+      queue_locker = QueueManagement::QueueLocker.new(queue_name: @queue_name, redis: @redis, worker_id: @worker_id)
+
+      @fetcher       = fetcher       || Fetcher.new(queue_name: @queue_name, worker_id: @worker_id, redis: @redis,
+                                                    queue_locker:, tags_locker:)
+      @queue_manager = queue_manager || QueueManagement::QueueManager.new(queue_name: @queue_name, redis: @redis,
+                                                                          tags_locker:)
+    end
 
     def work_loop
       while @running
@@ -61,7 +71,7 @@ module Jobkiq
     end
 
     def log_worker_started
-      @logger.info("Jobkiq worker started (queue=#{@queue_name})")
+      @logger.info("Jobkiq worker started (queue=#{@queue_name}, worker_id=#{@worker_id})")
     end
 
     def log_job_failed(job_attrs:, exception:)
