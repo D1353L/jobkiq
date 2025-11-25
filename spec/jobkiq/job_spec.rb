@@ -12,12 +12,10 @@ RSpec.describe Jobkiq::Job do
 
   let(:redis_mock) { MockRedis.new }
   let(:queue_manager_double) { instance_double(Jobkiq::QueueManagement::QueueManager, enqueue: true) }
-  let(:tags_locker_double) { instance_double(Jobkiq::QueueManagement::TagsLocker) }
 
   before do
     allow(Jobkiq::RedisConnection).to receive(:redis).and_return(redis_mock)
     allow(Jobkiq::QueueManagement::QueueManager).to receive(:new).and_return(queue_manager_double)
-    allow(Jobkiq::QueueManagement::TagsLocker).to receive(:new).and_return(tags_locker_double)
     allow(SecureRandom).to receive(:uuid).and_return('123-uuid')
   end
 
@@ -34,7 +32,7 @@ RSpec.describe Jobkiq::Job do
       job_class.new
 
       expect(Jobkiq::QueueManagement::QueueManager)
-        .to have_received(:new).with(queue_name: 'default', redis: redis_mock, tags_locker: tags_locker_double)
+        .to have_received(:new).with(queue_name: 'default', redis: redis_mock, tags_locker: nil)
     end
   end
 

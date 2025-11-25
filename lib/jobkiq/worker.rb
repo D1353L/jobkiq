@@ -2,8 +2,6 @@
 
 module Jobkiq
   class Worker
-    TAG_HOLD_EXPIRATION_SEC = 60
-
     def initialize(queue_name: DEFAULT_QUEUE_NAME, redis: nil, queue_manager: nil, fetcher: nil,
                    logger: nil)
       @queue_name = queue_name
