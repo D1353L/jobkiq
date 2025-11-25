@@ -6,6 +6,14 @@ module Jobkiq
       include Helpers::Keys
 
       LOCK_EXPIRATION_SEC = 10
+      LUA_TRY_LOCK_SCRIPT = <<~LUA
+        local locked = redis.call("GET", KEYS[1])
+        if locked then
+            return false
+        end
+
+        return redis.call("SET", KEYS[1], ARGV[1], "NX", "EX", ARGV[2])
+      LUA
 
       def initialize(queue_name:, redis:, worker_id:)
         @redis = redis
@@ -14,9 +22,7 @@ module Jobkiq
       end
 
       def try_lock
-        return false if @redis.get(@lock_key)
-
-        @redis.set(@lock_key, @worker_id, nx: true, ex: LOCK_EXPIRATION_SEC)
+        @redis.eval(LUA_TRY_LOCK_SCRIPT, keys: [@lock_key], argv: [@worker_id, LOCK_EXPIRATION_SEC])
       end
 
       def release

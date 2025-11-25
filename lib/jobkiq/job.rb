@@ -30,7 +30,7 @@ module Jobkiq
       @queue_manager = queue_manager || QueueManagement::QueueManager.new(
         queue_name:,
         redis: @redis,
-        tags_locker: QueueManagement::TagsLocker.new(queue_name:, redis: @redis)
+        tags_locker: nil
       )
     end
 
